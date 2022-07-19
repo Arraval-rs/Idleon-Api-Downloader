@@ -76,6 +76,11 @@ var templateData = {
                 "red2": {}
             }
         },
+        "saltLick":[],
+        "printer": {
+            "samples":{},
+            "printing":{}
+        },
         "anvilCraftsUnlocked": {}
 
     },

@@ -158,8 +158,15 @@ function fillAccountData(account, characters, fields) {
     account.bribes = condenseRawArray(bribes, null, true);
     // TODO add map for bribe names?
 
+    // salt lick
+    var salt = parseRawArrayFromString(fields.SaltLick, 1, 1)
+    account.saltLick = condenseRawArray(salt, null, true)
+
     // refinery
     account.refinery = createRefineryData(fields);
+
+    //3D Printer
+    account.printer = createPrinterData(characters.length, fields)
 
     // quests complete (possibly temporary for use in spreadsheet)
     var quests = {};
@@ -203,9 +210,10 @@ function fillAccountData(account, characters, fields) {
 }
 
 function createRefineryData(fields) {
-    // 0 =
-    // 1 = inventory
-    // 2 =
+    // 0 = num unlocked ([0]) and number required to unlock/2(i.e. 644 * 2 = ~1300 of salt 6 to unlock salt 7)???
+        // They all end in the same decimal value 
+    // 1 = inventory order
+    // 2 = number in inventory
     // 3 = redox salt 
     // 3[0] = refined (unclaimed)
     // 3[1] = rank
@@ -220,9 +228,10 @@ function createRefineryData(fields) {
     var rawRefinery = JSON.parse(fields.Refinery);
     var refinery = {};
     refinery.salts = {};
+    refinery.storage = [];
 
     //this is how they are named in the template file
-    var salts = ["redox", "explosive", "spontaneity", "dioxide", "red", "red2"];
+    var salts = ["redox", "explosive", "spontaneity", "dioxide", "purple", "nullo"];
     salts.forEach((salt, i) => {
         // redox starts at index 3, so it has such an offset
         var rawSalt = rawRefinery[i + 3];
@@ -232,11 +241,42 @@ function createRefineryData(fields) {
             "state": ((rawSalt[3] == 1) ? "on" : "off"),
             "autoPercent": rawSalt[4]
         }
-
-        //TODO add refinery storage
+    });
+    //TODO add refinery storage
+    rawRefinery[1].forEach((salt, i) => {
+        storageSpace = {
+            "salt": mapLookup(itemMap, salt),
+            "count": rawRefinery[2][i]
+        }
+        refinery.storage.push(storageSpace);
     });
 
     return refinery;
+}
+
+function createPrinterData(numChars, fields) {
+    var rawPrinter = JSON.parse(fields.Print)
+    var printer = {}
+    printer.samples = []
+    printer.printing = []
+    for (var i = 0; i < numChars; i++) {
+        for (var j = 0; j < 5; j ++) {
+            sample = {
+                "item": mapLookup(itemMap, rawPrinter[14 * i + 5 + 2 * j]),
+                "rate": rawPrinter[14 * i + 6 + 2 * j]
+            }
+            printer.samples.push(sample)
+        }
+        for (var k = 0; k < 2; k++) {
+            sample = {
+                "item": mapLookup(itemMap, rawPrinter[14 * i + 15 + 2 * k]),
+                "rate": rawPrinter[14 * i + 16 + 2 * k]
+
+            }
+            printer.printing.push(sample)
+        }
+    }
+    return printer
 }
 
 // grabs information from fields and inserts it into characters and returns the filled out characters
@@ -668,4 +708,9 @@ function getAnyFieldValue(field) {
 
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function parseRawArrayFromString(str, startPad = 0, endPad = 0, delim = ',') {
+    sub = str.substr(startPad, str.length - (startPad + endPad))
+    return sub.split(delim)
 }
