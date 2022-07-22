@@ -321,6 +321,19 @@ function fillCharacterData(characters, numChars, fields) {
         var inventoryItemCounts = fields["ItemQTY_" + i];
         characters[i].inventory = condenseTwoRawArrays(inventoryItemNames, inventoryItemCounts, "name", "count", itemMap, null, false, true);
 
+        // carry capacity
+        var capacityArray = JSON.parse(fields['MaxCarryCap_' + i]);
+        var capacityValues = {}
+        var materials = ["Mining", "Souls", "Fishing", "Bugs", "Critters", "Foods", "bCraft", "Chopping"]
+        materials.forEach((mat, j) => {
+            if(mat == "bCraft") {
+                characters[i].carryCapacity["Materials"] = parseInt(capacityArray[mat])
+            }
+            else {
+                characters[i].carryCapacity[mat] = parseInt(capacityArray[mat])
+            }
+        })
+
         // equipment (0 = armor, 1 = tools, 2 = food)
         var equipableNames = fields["EquipOrder_" + i];
         var equipableCounts = fields["EquipQTY_" + i];

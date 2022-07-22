@@ -102,6 +102,7 @@ var templateData = {
         "minigamePlays": 0,
 
         "inventory": [],
+        "carryCapacity": {},
 
         "equipment": {},
         "tools": {},
